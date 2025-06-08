@@ -1,0 +1,68 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Hexagonal keyboard layout - Sjoerd Visscher</title>
+    <link href="style.css" rel="stylesheet">
+		<script src="/ga.js" type="text/javascript"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1,user-scalable=0"/>
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+  </head>
+  <body>
+		
+		<div id="keyboard"></div>
+      
+		<div id="features" tabindex="1">
+			<div id="close-features">x</div>
+         
+      <p>Hexagonal keyboard layout with:</p>
+         
+      <ul>
+        <li>Pitch layed out horizontally, the different scales vertically.</li>
+        <li>All basic chords on one line from the root note, going to the right.</li>
+        <li>Major chords starting on the rows with uppercase notes: major, maj7, 7/9/11/13 etc.</li>
+        <li>Minor chords starting on the rows with lowercase notes; minor, m7, m7/9/11/13 etc.</li>
+        <li>sus2 and sus4 variants above and below the third.</li>
+        <li>All the notes from a major scale conveniently together.</li>
+        <li>Enough room on an iPad screen for 3.5 octaves, with comfortably sized keys.</li>
+        <li>This sequence of chords can be played by moving one finger one key down-right repeatedly:
+          <br clear="none">F&sharp;&mdash;D&sharp;m&mdash;B&mdash;G&sharp;m&mdash;E&mdash;C&sharp;m&mdash;A&mdash;F&sharp;m&mdash;D&mdash;Bm&mdash;G&mdash;Em&mdash;
+          <br clear="none">C&mdash;Am&mdash;F&mdash;Dm&mdash;B&flat;&mdash;Gm&mdash;E&flat;&mdash;Cm&mdash;A&flat;&mdash;Fm&mdash;D&flat;&mdash;B&flat;m&mdash;
+          <br clear="none">(The circle of fifths alternating with the relative minors.)
+          <br clear="none">The same sequence, but instead the maj7 4-finger variants, 
+          <br clear="none">can be played by moving one finger down-left repeatedly.
+        </li>
+				<li>Works well with other tonal systems: <a href="?5">5edo</a>, <a href="?7">7edo</a>, <a href="?9">9edo</a>, <a href="?12">12edo</a>, <a href="?17">17edo</a>, <a href="?19">19edo</a>, <a href="?24">24edo</a>,<br><a href="?31">31edo</a>, <a href="?50">50edo</a>, <a href="?55">55edo</a>, <a href="?72">72edo</a></li>
+				<li>Playable with mouse and, even better, also with multi-touch!<br>Try dragging horizontally to play like a harp.</li>
+        <li>MIDI out uses MPE mode with a pitch bend range of 12.</li>
+				<li>Playable with the AXiS-49 controller in <a href="https://www.c-thru-music.com/cgi/?page=spec_49-selfless">selfless mode</a>.</li>
+        <li>Playable with the <a href="https://global.novationmusic.com/launch/launchpad-mini#">Launchpad Mini</a> controller. <a href="?#launchpad">Try it out!</a></li>
+        <li>Playable with the <a href="https://lumatone.io">Lumatone</a>. <a href="?#lumatone">Try it out!</a></li>
+      </ul>
+         
+      <p>
+        It's basically a mix between <a href="http://www.c-thru-music.com/cgi/?page=layout_notemap">C-thru-music's axis controllers</a> and <a href="http://www.soundprismhowto.com/howto2/index.php?show=tones">Audanika's SoundPrism</a>.
+      </p>
+         
+      <p>I would love to have an iPad midi controller app with this layout!</p>
+         
+      <p><a href="https://twitter.com/sjoerd_visscher" shape="rect">Sjoerd Visscher</a></p>
+         
+    </div>
+    
+    <select id="midi-out" onclick="this.options[0].text = 'No MIDI out'">
+      <option onclick="output = null">MIDI out</option>
+    </select>
+    
+    <div id="tuning">
+      <select id="octave"></select>
+      <select id="mos"><optgroup label="MOS scale"></optgroup></select>
+      <select id="gen"><optgroup label="Generator"></optgroup></select>
+      <select id="third"></select>
+    </div>
+          
+		<script src="/WebMIDIAPI.js"></script>
+		<script src="./main.mjs" type="module"></script>
+
+  </body>
+</html>

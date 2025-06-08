@@ -1,0 +1,87 @@
+  <html>
+    <head>
+      <title>Iterated function system</title>
+      <link type="text/css" rel="stylesheet" href="/ifs.css" />
+			<script type="text/javascript" src="/ifs.js"></script>
+      <script src="/ga.js" type="text/javascript"></script>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    </head>
+    <body 
+      onload="draw()"
+      ontouchstart="isTap = true;"
+      ontouchmove="draw(event.touches[0].clientX, event.touches[0].clientY); isTap = false; event.preventDefault()"
+      ontouchend="if (isTap) doClick()"
+      onmousemove="draw(event.clientX, event.clientY)"
+      onmousedown="doClick()">
+      <canvas id="canvas" width="1000" height="700"></canvas>
+      <div id="help">Click to add more branches.</div>
+    </body>
+  </html>
+
+<style>
+  body { 
+    text-align:center; 
+    cursor: pointer; 
+  }
+  #help { 
+    text-align: center; 
+    position: fixed; 
+    top: 0.5em; 
+    width: 100%; 
+    font-family: sans-serif;
+  }
+</style>
+
+<script>
+var data;
+var startTime = new Date();
+var curX = 0; var curY = 0;
+function draw(x,y) {
+  if (arguments.length == 0) { x = curX; y = curY }
+  curX = x; curY = y;
+  canvas = document.getElementById("canvas");
+  ctx = canvas.getContext("2d");
+  ctx.lineCap="round";
+  ctx.clearRect(0, 0, 1000, 700);
+  //ctx.globalCompositeOperation="copy";
+  f1 = 1 - Math.sin(x / 50) / 2;
+  f2 = 1 - Math.sin(y / 50) / 2;
+  data = [{x0:500,y0:600,x1:500,y1:600,t:-1.6,r:160,h:50 + 50 * f1 + 50 * f2,s:50,l:50,p:1,w:80,a:1}];
+  count = 0;
+  drawSome();
+  // top.document.title = count;
+}
+
+var count;
+var limit = 30;
+function drawSome()
+{
+  while (data.length)
+  {
+    var o = data.shift();
+    if (o.w < limit)
+      continue;
+    var x2 = o.x1 + Math.cos(o.t) * o.r;
+    var y2 = o.y1 + Math.sin(o.t) * o.r;
+
+    ctx.strokeStyle = "hsla("+o.h+","+o.s+"%,"+o.l+"%,"+o.a+")";
+    ctx.lineWidth = o.w;
+    ctx.beginPath();
+    ctx.moveTo((o.x0+o.x1)/2, (o.y0+o.y1)/2);
+    ctx.quadraticCurveTo(o.x1, o.y1, (x2+o.x1)/2, (y2+o.y1)/2);
+    ctx.stroke();
+    data.unshift({ x0: o.x1, y0: o.y1, x1: x2, y1: y2, t:o.t-o.p*f1-0.1,     r:o.r*(0.6 + 0.1*f2), w:o.w*0.77, h:o.h - 20 + 30 * f2, s:o.s-1, l:o.l-5*o.p, p:-o.p, a:o.a*1.2});
+    data.unshift({ x0: o.x1, y0: o.y1, x1: x2, y1: y2, t:o.t+o.p*f2+0.1,   r:o.r*(0.7 + 0.1*f1), w:o.w*0.68, h:o.h - 20 + 30 * f1, s:o.s-1, l:o.l+5*o.p, p:-o.p, a:o.a*0.8});
+    //data.push({ x: o.x, y: o.y, t:o.t, r:o.r*0.9, w:o.w*0.9    , h:o.h   , s:o.s, l:o.l, p:-o.p, a:o.a*0.5});
+    count++;
+  }
+}
+
+var isTap = false;
+function doClick()
+{
+  limit *= 0.68; 
+  draw();
+  document.getElementById("help").style.display = "none";
+}
+</script>

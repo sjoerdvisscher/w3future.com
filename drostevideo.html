@@ -1,0 +1,157 @@
+<html>
+	<head>
+		<title>Droste video</title>
+		<link href='http://fonts.googleapis.com/css?family=Raleway:400,200' rel='stylesheet' type='text/css'>
+		<style>
+			body {
+				font-family: Raleway;
+				font-weight: 400;
+			}
+			#explanation {
+				background: #444;
+				border-radius: 30px;
+				color: white;
+				padding: 30px;
+			}
+			h1 {
+				font-weight: 200;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="explanation">
+			<h1>please give this page access to your webcam<br>hold a plain piece of paper in front of you.</h1>
+			<p>Please hold the piece of paper in the middle of the image.</p>
+			<p>Other things to try to hold up are round things, for example a plate, or something with a border, like an ipad with a mostly white screen.</p>
+		</div>
+		<video width="600" height="450" style="display: none"></video>
+		<canvas width="600" height="450" style="display: none"></canvas>
+		<canvas width="600" height="450" style="display: none; width: 80%; padding: 0 10%"></canvas> 
+		<script>
+			var vendors = ['webkit', 'ms', 'moz', 'o'];
+			for (var i = 0; i < vendors.length && !window.requestAnimationFrame; i++)
+				window.requestAnimationFrame = window[vendors[i] + 'RequestAnimationFrame'];
+			for (var i = 0; i < vendors.length && !navigator.getUserMedia; i++)
+				navigator.getUserMedia = navigator[vendors[i] + 'GetUserMedia'];
+
+			var video = document.querySelector('video');
+			var canvi = document.querySelectorAll('canvas');
+			var ctx0 = canvi[0].getContext('2d');
+			var ctx1 = canvi[1].getContext('2d');
+			function connectVideo() {
+				navigator.getUserMedia({ video: true }, function(localMediaStream) {
+					canvi[1].style.display = 'inline-block';
+					document.querySelector('#explanation').style.display = 'none';
+					video.src = window.URL.createObjectURL(localMediaStream);
+					video.play();
+					detect();
+				}, function(err) { alert("There was an error: " + err) });
+			}
+			if (navigator.getUserMedia && window.requestAnimationFrame)
+				connectVideo()
+			else
+				alert("I'm sorry, but you need a different browser for this effect, for example a recent version of Chrome.");
+			
+			function detect() {
+				var w = video.width;
+				var h = video.height;
+				var rowOffset = w * 4;
+				ctx0.setTransform(-1, 0, 0, 1, w, 0);
+				ctx0.drawImage(video, 0, 0, w, h);
+				/*var minX = w/3, maxX = w*2/3, minY = h/3, maxY = h*2/3;
+				ctx0.clearRect(minX,minY,maxX-minX,maxY-minY);*/
+				var imgData = ctx0.getImageData(0, 0, w, h);
+				var data = imgData.data;
+				var x0 = w >> 1;
+				var y0 = h >> 1;
+				var offset = (x0 + y0 * w) * 4;
+				var c0 = data.subarray(offset, offset + 3);
+				var c0val = c0[0] + c0[1] + c0[2];
+				var stack = [{ offset: offset, c: c0, x: x0, y: y0 }];
+				var minX = w, minY = h, maxX = 0, maxY = 0;
+				var pixelCount = 0;
+				var maxPixelCount = w * h / 4;
+				while (stack.length && pixelCount < maxPixelCount) {
+					var p = stack.pop();
+					var offset = p.offset;
+					if (p.x < 0 || p.x >= w || p.y < 0 || p.y >= h || data[offset + 3] < 255)
+						continue;
+					data[offset + 3] = 0;
+					var c = data.subarray(offset, offset + 3);
+					var delta = 
+							Math.pow(c[0] - p.c[0], 2) + 
+							Math.pow(c[1] - p.c[1], 2) + 
+							Math.pow(c[2] - p.c[2], 2);
+					var delta0 = 
+							Math.pow(c[0] - c0[0], 2) + 
+							Math.pow(c[1] - c0[1], 2) + 
+							Math.pow(c[2] - c0[2], 2);					
+					if (delta*7 < c0val && delta0 < c0val) {
+						pixelCount++;
+						stack.push({ offset: offset - 4, c: c, x: p.x - 1, y: p.y });
+						stack.push({ offset: offset + 4, c: c, x: p.x + 1, y: p.y });
+						stack.push({ offset: offset - rowOffset, c: c, x: p.x, y: p.y - 1 });
+						stack.push({ offset: offset + rowOffset, c: c, x: p.x, y: p.y + 1 });
+					} else {
+						minX = Math.min(minX, p.x);
+						maxX = Math.max(maxX, p.x);
+						minY = Math.min(minY, p.y);
+						maxY = Math.max(maxY, p.y);
+					}
+				}
+				if (pixelCount < w * h / 16 || pixelCount >= maxPixelCount) {
+					ctx1.setTransform(-1, 0, 0, 1, w, 0);
+					ctx1.drawImage(video, 0, 0, w, h);
+					ctx1.setTransform(1, 0, 0, 1, 0, 0);
+					ctx1.strokeStyle = "white";
+					ctx1.strokeWidth = 1;
+					ctx1.strokeRect(w/3, h/3, w/3, h/3);
+				} else {
+					var scaleX = (maxX - minX) / w;
+					var scaleY = (maxY - minY) / h;
+					var scale = Math.max(scaleX, scaleY) * 1.1;
+					function calcPoint(x, y, d) {
+						var dx = x - x0;
+						var dy = y - y0;
+						var th = Math.atan2(dx, dy) / Math.PI / 2 + 0.5;
+						var s = 1 * th + scale * (1 - th);
+						var x1 = x0 + dx * s * scale;
+						var y1 = y0 + dy * s * scale;
+						var offset = (Math.floor(x1) + Math.floor(y1)*w) * 4;
+						if (d < 10 && data[offset + 3] < 255) {
+							return calcPoint(x0 + dx / scale, y0 + dy / scale, d + 1);
+						} else {
+							return { x: x1, y: y1 };
+						}
+					}
+					function calcColor(offset, x, y) {
+						x -= Math.floor(x);
+						y -= Math.floor(y);
+						return Math.floor((data[offset] * (1 - x) + data[offset + 4] * x) * (1 - y) +
+							(data[offset + rowOffset] * (1 - x) + data[offset + 4 + rowOffset] * x) * y);
+					}
+					var newData = ctx1.createImageData(w, h);
+					var i = 0;
+					for (var y = 0; y < h; y++) {
+						for (var x = 0; x < w; x++) {
+							var p = calcPoint(x, y, 0);
+							var offset = (Math.floor(p.x) + Math.floor(p.y)*w) * 4;
+							newData.data[i++] = calcColor(offset, p.x, p.y);
+							newData.data[i++] = calcColor(offset+1, p.x, p.y);
+							newData.data[i++] = calcColor(offset+2, p.x, p.y);
+							newData.data[i++] = 255;
+						}
+					}
+					ctx1.putImageData(newData, 0, 0);
+				}
+				window.requestAnimationFrame(detect);
+			}
+			
+			function getPixel(x, y, data) {
+				var offset = (x + y * video.width) * 4;
+				return {x: x, y: y, val: data[offset] + data[offset+1] + data[offset+2] };
+			}
+										 
+		</script>
+	</body>
+</html>

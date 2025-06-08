@@ -1,0 +1,487 @@
+  <html>
+    <head>
+      <title>Morphing Platonic Solids</title>
+    </head>
+    <body onload="start()">
+      <svg viewBox="-1 -1 2 2" width="100%" height="100%" shape-rendering="optimizeSpeed" color-rendering="optimizeSpeed">
+
+        <defs>
+          <linearGradient id="sky" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#369" />
+            <stop offset="30%" stop-color="#224" />
+            <stop offset="100%" stop-color="#fee" />
+          </linearGradient>
+        </defs>
+
+        <rect x="-100%" y="-50%" width="200%" height="100%" fill="url(#sky)" />
+        <g id="polys_shadow" opacity="0.1" />
+        <g id="polys" />
+
+      </svg>
+      <div>
+        <p>Press keys to morph:</p>
+        <table>
+          <tr><td>key</td><td></td><td>faces</td><td>edges</td><td>vertices</td></tr>
+          <tr><td>0:</td><td>Icosahedron</td><td>20</td><td>30</td><td>12</td></tr>
+          <tr><td>2:</td><td>Dodecahedron</td><td>12</td><td>30</td><td>20</td></tr>
+          <tr><td>4:</td><td>Tetrahedron</td><td>4</td><td>6</td><td>4</td></tr>
+          <tr><td>6:</td><td>Cube</td><td>6</td><td>12</td><td>8</td></tr>
+          <tr><td>8:</td><td>Octahedron</td><td>8</td><td>12</td><td>6</td></tr>
+        </table>
+      </div>
+    </body>
+  </html>
+	
+<style>
+  html, body { padding: 0; margin: 0; overflow: hidden; width: 100%; height: 100% }
+  div {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    font-family: sans-serif;
+  }
+  td+td+td {
+    text-align: right;
+  }
+</style>
+
+<script>
+    var phi = (Math.sqrt(5) + 1)/2;
+    var points = [];
+    var polys = [];
+    var midPoints = {};
+    var origin;
+
+    var g_polys;
+    var g_polys_shadow
+    var t0;
+    var tra = 0.15;
+    var trb = 0.1;
+    var trf;
+    var trfTgt = [0, 0, 0, 1, 0, 0];
+    var trfSrc = [0, 0, 0, 1, 0, 0];
+    var trfStart = 0;
+    var isTetraDual = false;
+
+    function goto(trfNew) {
+      trfSrc = trf;
+      trfTgt = trfNew;
+      trfStart = new Date() - t0;
+    }
+
+    document.onkeydown = function(evt) {
+      switch (evt.keyCode) {
+        case 48: // 0
+          return goto([0, 0, 0, 0, 1, 0]);
+        case 50: // 2
+          return goto([0, 0, 0, 1, 0, 0]);
+        case 52: // 4
+          if (trfTgt[2] || trfTgt[5]) isTetraDual = !isTetraDual;
+          return isTetraDual ? goto([0, 0, 0, 0, 0, 1]) : goto([0, 0, 1, 0, 0, 0]);
+        case 54: // 6
+          return goto([0, 1, 0, 0, 0, 0]);
+        case 56: // 8
+          return goto([1, 0, 0, 0, 0, 0]);
+      }
+    }
+
+    function start()
+    {
+      origin = new Point(0, 0, 0);
+      g_polys = document.getElementById("polys");
+      g_polys_shadow = document.getElementById("polys_shadow");
+
+      // Construct cube
+      // var f = (4 * phi + 3)/15;
+      // var f = (phi + 1) / 3;
+      for (var i = 0; i<8; i++) {
+        var p = new Point(i&1?-1:1, i&2?-1:1, i&4?-1:1);
+        points[i] = new AnimatedPoint(p, p, p.x*p.y*p.z > 0 ? p : origin.add(p, 1/3), p, p, p.x*p.y*p.z < 0 ? p : origin.add(p, 1/3));
+      }
+
+      // Construct mid-points
+      for (var i = 0; i<8; i++) {
+        for (var j = 0; j<i; j++) {
+          var x = i ^ j;
+          if (x == 1 || x == 2 || x == 4) {
+            var p = average([points[i], points[j]]);
+            var ap = new AnimatedPoint(p, p, p, p, p, p);
+            points.push(ap);
+            midPoints[p] = ap;
+          }
+        }
+      }
+
+      polys = polys.concat(createDodecaCapOnCubeFace(createFace(0,2,3,1)));
+      polys = polys.concat(createDodecaCapOnCubeFace(createFace(0,1,5,4)));
+      polys = polys.concat(createDodecaCapOnCubeFace(createFace(0,4,6,2)));
+      polys = polys.concat(createDodecaCapOnCubeFace(createFace(6,4,5,7)));
+      polys = polys.concat(createDodecaCapOnCubeFace(createFace(3,2,6,7)));
+      polys = polys.concat(createDodecaCapOnCubeFace(createFace(5,1,3,7)));
+
+      t0 = +new Date();
+
+      animate();
+    }
+
+    function animate()
+    {
+      var t = new Date() - t0;
+
+      trb = t/15000;
+      tra = t/4220;
+      t = (t - trfStart) / 4000;
+      if (t > 1) t = 1;
+      trf = [];
+      for (var i = 0; i < 6; i++)
+        trf[i] = trfSrc[i] * (1 - t) + trfTgt[i] * t;
+      trr = trf[0] * 0.6 + trf[1] * 1.2 + trf[2] * 1.2 + trf[3] * 1 + trf[4] * 0.8 + trf[5] * 1.2;
+
+      for (var i=0; i<points.length; i++)
+      {
+        points[i].setF(trf);
+        points[i].transform0(tra, trb, trr);
+        points[i].to2d();
+      }
+      for (var i=0; i<polys.length; i++)
+        polys[i].calculateNormal();
+      polys.sort(function(p1,p2) {return p2.normal.z-p1.normal.z});
+      for (var i=0; i<polys.length; i++)
+      {
+        polys[i].to2d();
+        g_polys.appendChild(polys[i].elt);
+      }
+      for (var i=0; i<points.length; i++)
+      {
+        points[i].y = -3;
+        points[i].x *= 1.2;
+        points[i].z *= 1.2;
+        points[i].to2d();
+      }
+      for (var i=0; i<polys.length; i++)
+        polys[i].shadowTo2d();
+
+      setTimeout("animate()", 30);
+    }
+
+    function createFace()
+    {
+      var pts = [];
+      for (var i=0;i<arguments.length;i++)
+        pts.push(points[ arguments[i] ]);
+      return new Poly(pts);
+    }
+
+    function createDodecaCapOnCubeFace(face)
+    {
+      // 0--te--1
+      // |\    /|
+      // | p2-p1|
+      // |/    \|
+      // 3------2
+      var pts = face.points;
+      var out = face.calculateNormal();
+      var topEdgeDir = pts[0].to(pts[1]).normalize();
+      var middle = average(face.points);
+      var p01 = middle.add(topEdgeDir, phi-1).add(out, phi-1);
+      var p1 = new AnimatedPoint(origin.add(out, 3), middle, pts[2].p[2], p01, p01, pts[1].p[5]);
+      var p02 = middle.add(topEdgeDir, 1-phi).add(out, phi-1);
+      var p2 = new AnimatedPoint(origin.add(out, 3), middle, pts[0].p[2], p02, p02, pts[3].p[5]);
+      points.push(p1);
+      points.push(p2);
+      var m01 = midPoints[average([pts[0], pts[1]])];
+      var m12 = midPoints[average([pts[1], pts[2]])];
+      var m23 = midPoints[average([pts[2], pts[3]])];
+      var m30 = midPoints[average([pts[3], pts[0]])];
+      m01.p[0] = origin.add(m01.p[0], 1.5);
+      m23.p[0] = origin.add(m23.p[0], 1.5);
+      m12.p[2] = pts[2].p[2];
+      m30.p[2] = pts[0].p[2];
+      m01.p[2] = pts[0].p[2];
+      m23.p[2] = pts[2].p[2];
+      m12.p[3] = m12.p[3].add(p01.add(m12.p[3], -1), -0.4);
+      m30.p[3] = m30.p[3].add(p02.add(m30.p[3], -1), -0.4);
+      m12.p[4] = origin.add(topEdgeDir, phi/((phi+1)/3)).add(out, 1/((phi+1)/3));
+      m30.p[4] = origin.add(topEdgeDir, -phi/((phi+1)/3)).add(out, 1/((phi+1)/3));
+      m12.p[5] = pts[1].p[5];
+      m30.p[5] = pts[3].p[5];
+      m01.p[5] = pts[1].p[5];
+      m23.p[5] = pts[3].p[5];
+      return [
+        new VisibleQuadrangle([pts[0], m01, p2, m30]),
+        new VisibleQuadrangle([pts[1], m12, p1, m01]),
+        new VisibleQuadrangle([pts[2], m23, p1, m12]),
+        new VisibleQuadrangle([pts[3], m30, p2, m23]),
+        new VisibleQuadrangle([m01, p1, m23, p2]),
+      ];
+    }
+
+    function average(pts)
+    {
+      var a = new Point(0,0,0);
+      var f = 1/pts.length;
+      for (var i=0;i<pts.length;i++)
+        a = a.add(pts[i], f);
+      return a;
+    }
+
+/*****
+* 3D SVG Library
+* Sjoerd Visscher
+* http://w3future.com/
+*/
+
+
+var SVG_NS ="http://www.w3.org/2000/svg";
+
+
+Function.prototype.inherit = function(c) {
+  for (var i in c.prototype)
+    this.prototype[i] = c.prototype[i];
+}
+
+
+
+function Point(x, y, z)
+{
+  this.x0 = this.x = x;
+  this.y0 = this.y = y;
+  this.z0 = this.z = z;
+};
+
+Point.prototype =
+{
+  transform0: function(a, b, r)
+  {
+    var z = (Math.cos(b)*this.z0 + Math.sin(b)*this.y0);
+    this.y = r * (Math.cos(b)*this.y0 - Math.sin(b)*this.z0);
+    this.x = r * (Math.cos(a)*this.x0 + Math.sin(a)*z);
+    this.z = r * (Math.cos(a)*z - Math.sin(a)*this.x0);
+  },
+
+  to: function(p)
+  {
+    return new Vector(p.x - this.x, p.y - this.y, p.z - this.z);
+  },
+
+  add: function(dir, f)
+  {
+    if (f === undefined) f = 1;
+    return new Point(this.x + f*dir.x, this.y + f*dir.y, this.z + f*dir.z);
+  },
+
+  eq: function(that)
+  {
+    var v = this.to(that);
+    return v.inProduct(v) < 1e-4;
+  },
+
+  to2d: function()
+  {
+    this.x2d = this.x*2/(this.z+7);
+    this.y2d = -0.4+(0.4-this.y)*2/(this.z+7);
+  },
+
+  setF: function() {},
+
+  clone: function() {
+    return new Point(this.x, this.y, this.z);
+  },
+
+  toString: function() {
+    return this.x + ',' + this.y + ',' + this.z;
+  }
+};
+
+function AnimatedPoint(p0)
+{
+  this.p = [];
+  this.f = [];
+  for (var i = 0; i < arguments.length; i++) {
+    this.p[i] = arguments[i];
+    this.f[i] = 1*!i;
+  }
+  Point.apply(this, [p0.x, p0.y, p0.z]);
+};
+
+AnimatedPoint.inherit(Point);
+
+AnimatedPoint.prototype.setF = function(f)
+{
+  this.f = f;
+  this.x0 = 0;
+  this.y0 = 0;
+  this.z0 = 0;
+  for (var i = 0; i < f.length; i++) {
+    this.x0 += this.p[i].x0*f[i];
+    this.y0 += this.p[i].y0*f[i];
+    this.z0 += this.p[i].z0*f[i];
+  }
+};
+
+
+
+function Vector(x,y,z)
+{
+  Point.apply(this, arguments);
+};
+
+Vector.inherit(Point);
+
+Vector.prototype.times = function(f)
+{
+  return new Vector(f*this.x, f*this.y, f*this.z);
+};
+
+Vector.prototype.normalize = function()
+{
+  if (this.normalized)
+    return this;
+  var len = this.length();
+  var v = this.times(1 / (len || 1e-3));
+  v.normalized = true;
+  return v;
+};
+
+Vector.prototype.length = function()
+{
+  return Math.sqrt(this.inProduct(this));
+};
+
+Vector.prototype.angleBetween = function(that)
+{
+  var v1 = this.normalize();
+  var v2 = that.normalize();
+  return Math.acos(v1.inProduct(v2));
+}
+
+Vector.prototype.inProduct = function(that)
+{
+  return this.x*that.x + this.y*that.y + this.z*that.z;
+}
+
+Vector.prototype.crossProduct = function(that)
+{
+  return new Vector(
+    this.y * that.z - this.z * that.y,
+    this.z * that.x - this.x * that.z,
+    this.x * that.y - this.y * that.x);
+};
+
+
+
+function Poly(points)
+{
+  this.points = points;
+};
+
+Poly.prototype.calculateNormal = function()
+{
+  return this.normal = this.crossProduct().normalize();
+};
+
+Poly.prototype.crossProduct = function()
+{
+  return this.points[1].to(this.points[0]).crossProduct(
+    this.points[1].to(this.points[2]));
+};
+
+Poly.prototype.area = function()
+{
+  return 0.5*this.crossProduct().length();
+};
+
+
+
+function VisiblePoly(points)
+{
+  Poly.apply(this, arguments);
+  this.elt = document.createElementNS(SVG_NS, "polygon");
+  g_polys.appendChild(this.elt);
+  this.shadow = document.createElementNS(SVG_NS, "polygon");
+  this.shadow.setAttribute("fill", "black");
+  g_polys_shadow.appendChild(this.shadow);
+};
+VisiblePoly.inherit(Poly);
+
+VisiblePoly.prototype.to2d = function()
+{
+  var a = [];
+  for (var i=0;i<this.points.length;i++)
+  {
+    a.push(this.points[i].x2d);
+    a.push(this.points[i].y2d);
+  }
+  this.elt.setAttribute("points", a.join(" "));
+
+  var fill;
+  if (this.normal.degenerate || this.normal.z>0 || this.points[0].eq(this.points[1]) || this.points[0].eq(this.points[2]) || this.points[1].eq(this.points[2]))
+    fill = "none";
+  else
+  {
+    var diff = this.normal.y+0.8 + this.normal.z*0.4;
+    if (diff<0) diff=-diff;
+    var spec = (0.6*this.normal.y+0.8*-this.normal.z);
+    if (spec<0) spec=0;
+    spec = Math.pow(spec, 16);
+    fill = "rgb("+Math.floor(80+diff*100+spec*100)+","+Math.floor(50+diff*120+spec*100)+","+Math.floor(50+diff*120+spec*100)+")";
+  }
+  this.elt.setAttribute("fill", fill);
+};
+
+VisiblePoly.prototype.hide = function()
+{
+  this.elt.setAttribute("fill", "none");
+}
+
+VisiblePoly.prototype.shadowTo2d = function()
+{
+  var a = [];
+  for (var i=0;i<this.points.length;i++)
+  {
+    a.push(this.points[i].x2d);
+    a.push(this.points[i].y2d);
+  }
+  this.shadow.setAttribute("points", a.join(" "));
+};
+
+
+function VisibleQuadrangle(pts) {
+  VisiblePoly.apply(this, arguments);
+  this.polys = [
+    [new VisiblePoly([pts[0], pts[1], pts[2]]), new VisiblePoly([pts[0], pts[2], pts[3]])],
+    [new VisiblePoly([pts[0], pts[1], pts[3]]), new VisiblePoly([pts[1], pts[2], pts[3]])]
+  ];
+  polys.push(this.polys[0][0], this.polys[0][1], this.polys[1][0], this.polys[1][1]);
+}
+VisibleQuadrangle.inherit(VisiblePoly);
+
+VisibleQuadrangle.prototype.to2d = function()
+{
+  if (this.points[0].eq(this.points[2]) || this.points[1].eq(this.points[3])) {
+    this.polys[0][0].hide();
+    this.polys[0][1].hide();
+    this.polys[1][0].hide();
+    this.polys[1][1].hide();
+  } else {
+    var inp = this.polys[0][0].normal.inProduct(this.points[0].to(this.points[3])) +
+      this.polys[0][0].normal.inProduct(this.points[1].to(this.points[3])) +
+      this.polys[0][0].normal.inProduct(this.points[2].to(this.points[3]));
+    if (inp < 0) {
+      this.polys[1][0].hide();
+      this.polys[1][1].hide();
+    } else {
+      this.polys[0][0].hide();
+      this.polys[0][1].hide();
+    }
+  }
+}
+
+VisibleQuadrangle.prototype.calculateNormal = function() {
+  // hack: so our to2d is called after the to2d of our sub-polys
+  this.normal = {
+    z: -1000
+  }
+}
+VisibleQuadrangle.prototype.shadowTo2d = function() {};
+</script>

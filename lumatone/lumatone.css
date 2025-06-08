@@ -1,0 +1,106 @@
+body {
+  font-family: sans-serif;
+  background: #666666 radial-gradient(#777777, #555555);
+  color: white;
+}
+form {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+form td {
+  width: 170px;
+}
+.inputs, #extra-inputs {
+  display: grid;
+  width: 740px;
+  grid-template-columns: 120px 500px 120px;
+}
+#extra-inputs {
+  grid-column: 1 / 4;
+}
+#add-input { 
+  grid-column: 2;
+  justify-self: start;
+  margin-top: 5px;
+}
+button, select {
+  background: #eeeeee;
+  padding: 4px 15px 3px;
+  border: none;
+  border-radius: 5px;
+  font: inherit;
+}
+button:hover, select:hover {
+  background: #ffffff;
+}
+input, select {
+  border: 1px solid transparent;
+  border-radius: 3px;
+  outline: none;
+  margin: 1px;
+  padding: 2px 4px;
+  font-size: inherit;
+  background-color: rgba(255,255,255,.8);
+  transition: background-color .2s;
+}
+input:focus {
+  background-color: rgba(255,255,255,1);
+}
+input.error {
+  border: 1px solid red;
+}
+code {
+  display: inline-block;
+  background: #cccccc;
+  color: #aa2222;
+  border: 1px solid #888888;
+  border-radius: 3px;
+  padding: 0 4px;
+  margin: 0 2px;
+  font-size: 120%;
+  align-self: center;
+  justify-self: end;
+}
+code[title] { cursor: help }
+input + code {
+  justify-self: start;
+}
+hr {
+  grid-column: 1 / 4;
+  border: none;
+}
+#lumatone-status {
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 7px 15px 4px;
+  background: #333333;
+  border: 1px solid #888888;
+  border-radius: 5px;
+  z-index: 1;
+  box-shadow: 0px 0px 5px rgba(0,0,0,.3);
+}
+#keyboard {
+  position: relative;
+  margin: 160px 50%;
+  padding: 20px;
+}
+.key {
+  position: absolute;
+  background: grey;
+  width: 33px;
+  height: 33px;
+  border: 2px dotted transparent;
+  border-radius: 100%;
+  transition: background .3s;
+  box-sizing: border-box;
+  box-shadow: 0px 0px 5px rgba(0,0,0,.3);
+}
+#intro, #lumatone-status {
+  font-family: monospace;
+  font-size: 140%;
+  color: #88ff88;
+  text-shadow: 0px 0px 1px black;
+}

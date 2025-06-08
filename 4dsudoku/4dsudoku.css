@@ -1,0 +1,22 @@
+body {
+  font-family: arial, sans-serif;
+  padding-top: 0.5em;
+}
+input {
+  text-align: center;
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  padding-top: 3px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+table {
+  position: absolute;
+  left: 570px;
+  top: 80px;
+  border: 1px solid #ccc;
+}
+p {
+  width: 260px;
+}

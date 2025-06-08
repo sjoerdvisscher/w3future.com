@@ -1,0 +1,73 @@
+<page url="/factordiagrams" type="html5">
+<html>
+  <head>
+    <title>Factor Diagrams</title>
+    <script src="https://raw.github.com/sjoerdvisscher/DiagramsJS/master/Diagrams.js"></script>
+  </head>
+  <body>
+    <div id="target"></div>
+    <textarea id="src" style="width: 100%; height: 50em"></textarea>
+  </body>
+  <script><![CDATA[
+    var primes = [];
+    function primeFactors(n)
+    {
+      if (n == 1)
+        return [];
+      var fs = [];
+      var i = 0, p = 0, r = n; 
+      while (p * p <= n)
+      {
+        p = primes[i];
+        if (r % p == 0)
+        {
+          fs.push(p);
+          r /= p;
+        }
+        else
+          i++;
+      }
+      if (r > 1)
+        fs.push(r);
+      if (r == n)
+        primes.push(n);
+      return fs;
+    }
+    function inCircle(prev, p, idx)
+    {
+      if (p == 2)
+      {
+        if (idx % 2 == 1)
+          return Diagrams.group(
+            prev.scale(0.8).translate(-1, 0), 
+            prev.scale(0.8).translate( 1, 0));
+        else
+          return Diagrams.group(
+            prev.scale(0.45).translate(0, -0.5), 
+            prev.scale(0.45).translate(0,  0.5));
+      }
+      var r = 0.8 / (1 + 1/p);
+      var sized = prev.scale(Math.pow(p, -0.8));
+      var g = [];
+      for (var i = 0; i < p; i++)
+        g.push(sized.translate(Math.sin(Math.PI * 2 * i / p) * r, Math.cos(Math.PI * 2 * i / p) * r));
+      return Diagrams.group.apply(Diagrams, g);
+    }
+    var diagrams = [];
+    for (var y = 0; y < 10; y++)
+      for (var x = 0; x < 10; x++)
+      {
+        var fs = primeFactors(1 + x + y * 10);
+        diagrams.push(fs.reduceRight(inCircle, Diagrams.circle(1)).translate(x * 2.2 + 1.1, y * 2.2 + 1.1));
+      }
+    var svg = Diagrams.group.apply(Diagrams, diagrams).scale(45).getSVG(1000, 1000);
+    document.getElementById("target").appendChild(svg);
+    document.getElementById("src").value = 
+      new XMLSerializer()
+        .serializeToString(svg)
+        .replace(/ xmlns[^"]+"[^"]+"/g, "")
+        .replace(/<svg /, "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" ");
+  ]]></script>
+</html>
+  
+</page>

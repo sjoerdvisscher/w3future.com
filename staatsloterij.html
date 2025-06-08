@@ -1,0 +1,74 @@
+<style>
+  .hand {
+    position: absolute;
+    top: 300px;
+    left: 50%;
+    -webkit-transition: all 0.3s ease-out;
+  }
+
+  .cardslot {
+    position: absolute;
+    left: -67px;
+    top: -87px;
+    -webkit-transition: -webkit-transform 1s;
+  }
+
+  .card {
+    background-image: url(Media/staatslot.jpg);
+    background-size: 100%;
+    background-repeat: no-repeat;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    width: 145px;
+    height: 230px;
+    -webkit-transition: box-shadow 1s;
+  }
+  .closed.hand .card {
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .hand .cardslot {
+    height: 300px;
+    top: -280px;
+    -webkit-transform-origin: 50% 200%;
+  }
+  .hand .cardslot .card {
+    -webkit-transform: translate(0, 100px);
+    -webkit-transition: -webkit-transform 0.5s;
+  }
+  .hand:not(.closed) .cardslot:hover .card {
+    -webkit-transform: translate(0, 50px);
+  }
+
+  .closed.hand .cardslot {
+    -webkit-transform: none !important;
+  }
+</style>
+
+<div id="hand1" class="hand closed">
+  <div class="cardslot" style="-webkit-transform: rotate(-15deg)">
+    <div class="card"></div>
+  </div>
+  <div class="cardslot" style="-webkit-transform: rotate(-9deg)">
+    <div class="card"></div>
+  </div>
+  <div class="cardslot" style="-webkit-transform: rotate(-3deg)">
+    <div class="card"></div>
+  </div>
+  <div class="cardslot" style="-webkit-transform: rotate(3deg)">
+    <div class="card"></div>
+  </div>
+  <div class="cardslot" style="-webkit-transform: rotate(9deg)">
+    <div class="card"></div>
+  </div>
+  <div class="cardslot" style="-webkit-transform: rotate(15deg)">
+    <div class="card"></div>
+  </div>
+</div>
+
+<button onclick="toggle()">Open/Close</button>
+<script>
+  function toggle() {
+    var hand = document.getElementById("hand1");
+    hand.className = hand.className == "hand" ? "hand closed" : "hand";
+  }
+</script>

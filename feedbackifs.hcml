@@ -1,0 +1,136 @@
+<page url="/feedbackifs" type="html5">
+  <html>
+    <head>
+      <title>Feedback IFS</title>
+      <link type="text/css" rel="stylesheet" href="/feedbackifs.css" />
+			<script type="text/javascript" src="/feedbackifs.js"></script>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    </head>
+    <body onload="start()">
+      <canvas width="1000" height="700"></canvas>
+      <canvas width="1000" height="700"></canvas>
+    </body>
+  </html>
+</page>
+
+<page url="/feedbackifs.css" type="css">
+  html { 
+    width: 100%; 
+    height: 100%; 
+    padding:0; 
+    margin: 0;
+  }
+  body { 
+    margin: 0; 
+    padding: 0;
+    position:absolute; 
+    left: 50%; 
+    top: 50%;
+  }
+  canvas { 
+    position: absolute; 
+    left: -500px; 
+    top: -350px; 
+    cursor: pointer; 
+  }
+  #help { 
+    text-align: center; 
+    position: absolute; 
+    top: -50%; 
+    left:-50%; 
+    padding: 0.5em; 
+    width: 100%; 
+    font-family: sans-serif; 
+    background: white; 
+    color: black; 
+  }
+</page>
+
+<page url="/feedbackifs.js" type="js">
+  function start()
+  {
+    var canvi = document.getElementsByTagName("canvas");
+    for (var i = 0; i < canvi.length; i++)
+    {
+      var ctx = canvi[i].getContext("2d");
+      ctx.fillStyle = "rgba(0,0,0,0.5)";
+      ctx.lineCap="round";
+    }
+    document.body.style.backgroundColor = "black";
+    draw();
+  }
+  
+  var t0 = new Date() / 1000;
+  function draw() {
+    var canvas1 = document.getElementsByTagName("canvas")[0];
+    var canvas2 = document.getElementsByTagName("canvas")[1];
+    var ctx = canvas1.getContext("2d");
+  
+    ctx.clearRect(0, 0, 1000, 700);
+  
+    var t = new Date()/1000 - t0;
+    var g = Math.min(1, t / 20);
+    
+    var s0 = Math.sin(t * 1.1) * 0.1 + 0.75;
+    var s1 = Math.sin(t * 1.2) * 0.1 + 0.65;
+    var a0 = 0.5 + 0.4 * Math.sin(t * 1.3);
+    var a1 = 0.8 + 0.6 * Math.sin(t * 1.4);
+    
+    var x0 = 500;
+    var y0 = 620;
+    var x1 = 500;
+    var y1 = 620 - 120 * g;
+    
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    ctx.translate(x1, y1);
+    ctx.rotate(a0);
+    ctx.scale(s0, s0);
+    ctx.drawImage(canvas2, -x0, -y0, 1000, 700);
+    ctx.restore();
+    
+    ctx.save();
+    ctx.globalAlpha = 0.6;
+    ctx.translate(x1, y1);
+    ctx.rotate(3.14 - a1);
+    ctx.scale(s1, -s1);
+    ctx.drawImage(canvas2, -x0, -y0, 1000, 700);
+    ctx.restore();
+    
+    ctx.save();
+    ctx.globalAlpha = 0.7;
+    ctx.globalCompositeOperation = "darker";
+    ctx.translate(x1, y1);
+    ctx.rotate((a0 - a1) / 2);
+    ctx.scale(s0 * s1, s0 * s1);
+    ctx.drawImage(canvas2, -x0, -y0, 1000, 700);
+    ctx.restore();
+    
+    ctx.globalCompositeOperation = "source-over";    
+    ctx.globalAlpha = 1;
+    
+    var beat = false;
+    if (t - t0 > 2)
+    {
+      beat = true;
+      t0 = t;
+    }
+    
+    ctx.strokeStyle = !beat ? "#888" : "#fff";
+    ctx.lineWidth = g * 40;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x0, y0);
+    ctx.stroke();
+    /*
+    ctx.strokeStyle = (count % 10 > 0) ? "#888" : "#eee";
+    ctx.lineWidth = 30;
+    ctx.beginPath();
+    ctx.moveTo(510, 560);
+    ctx.lineTo(510, 700);
+    ctx.stroke();
+    */
+    document.body.appendChild(canvas1);
+    setTimeout(draw, 0);
+  }
+</page>

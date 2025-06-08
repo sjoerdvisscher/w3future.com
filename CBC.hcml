@@ -1,0 +1,133 @@
+<page url="/cbc" type="html">
+  <html>
+<head>
+<title>Color Vision</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7"/>
+<style><![CDATA[
+body, div, p    { font-family:Verdana, Arial; }
+
+#box1, #box2, #box3, #box4, #box5, #box6, iframe {
+  position:absolute;
+  left:0px;
+  top:0px;
+  width: 100%;
+  height: 100%;
+}
+
+#box6 {
+  filter: progid:DXImageTransform.Microsoft.BasicImage(opacity=0);
+}
+
+body {
+  border:none;
+}
+
+#panel {
+  position:absolute;
+  background:white;
+  border:1px solid black;
+  z-index:10;
+  padding:3px;
+  top:30px;
+  right:30px;
+}
+
+#logo {
+  position: absolute;
+  z-index:10;
+  bottom: 30px;
+  right: 30px;
+}
+
+img {
+  border: none;
+}
+]]>
+</style>
+<script language="Javascript"><![CDATA[
+
+
+var urlParam=unescape(unescape(''+document.location.search));
+if (urlParam) {
+  urlParam=urlParam.substr(1);
+  if (urlParam.toLowerCase().substr(0,7)!='http://') urlParam='http://'+urlParam;
+}
+
+function removeFilters() {
+  box1.style.filter='';
+  box2.style.filter='';
+  box3.style.filter='';
+  box4.style.filter='';
+  box5.style.filter='';
+}
+
+function initFilters() {
+  box1.style.filter='progid:DXImageTransform.Microsoft.Light();'
+  box2.style.filter='progid:DXImageTransform.Microsoft.Compositor(function=3)'
+  box4.style.filter='progid:DXImageTransform.Microsoft.Light();'
+  box5.style.filter='progid:DXImageTransform.Microsoft.Compositor(function=9)'
+  box1.filters[0].addAmbient(255, 255, 0, 100);
+  box2.filters[0].apply();
+  box2.filters[0].play();
+  box3.style.filter='progid:DXImageTransform.Microsoft.BasicImage(grayscale=1)'
+  box4.filters[0].addAmbient(255, 232, 50, 100);
+  box4.filters[0].addAmbient(255, 232, 50, 15.5);
+  box5.filters[0].apply();
+  box1.filters[0].clear();
+  box4.filters[0].clear();
+  box1.filters[0].addAmbient(0, 0, 255, 100);
+  box2.filters[0].apply();
+  box2.filters[0].play();
+  box3.style.filter='progid:DXImageTransform.Microsoft.BasicImage(grayscale=1)'
+//  box4.filters[0].addAmbient(100, 140, 255, 100);
+  for (var i=0;i<9;i++) box4.filters[0].addAmbient(0, 23, 205, 97);
+  box5.filters[0].play();
+  startOp.click();
+  box6.filters[0].Opacity=0;
+}
+
+function loadUrl(urlParam) {
+  removeFilters();
+  if (urlParam.toLowerCase().substr(0,7)!='http://') urlParam='http://'+urlParam;
+  box1.innerHTML='<iframe onreadystatechange="if (this.readyState==\'complete\') initFilters()" src="'+urlParam+'">';
+  box6.innerHTML='<iframe src="'+urlParam+'">';
+}
+  ]]>
+</script>
+</head>
+<body onload="loadUrl(urlParam?urlParam:'http://www.q42.nl/demos/colorblindnesssimulator/colordemo.html');url.focus()" style="overflow:hidden;padding:0px;margin:0px">
+
+<div id="panel" align="center">
+<b>ColorBlindnessCheck</b><br />
+<script><![CDATA[document.write('<input style="width:180px;" id="url" value="'+urlParam+'" onkeyup="if (event.keyCode == 13) loadUrl(url.value);">');]]></script>
+<button onclick="loadUrl(url.value)" style="margin-left:3px;">Load</button><br />
+<small>
+  <input type="radio" name="pct" onclick="box6.filters[0].Opacity=1.0"/>0%
+  <input type="radio" name="pct" onclick="box6.filters[0].Opacity=0.3"/>70%
+  <input type="radio" name="pct" onclick="box6.filters[0].Opacity=0.0" id="startOp"/>100%
+</small>
+</div>
+
+  <div id="logo"><a href="http://www.q42.nl/"><img src="http://www.q42.nl/media/logo_q42.gif" alt="This tool is provided by Q42. Click for more information." /></a></div>
+
+<div id="box5">
+<div id="box4">
+<div id="box3">
+<div id="box2">
+<div id="box1">
+</div></div></div></div></div>
+
+<div id="box6">
+
+</div>
+
+<!-- This code was developed by Q42, Sjoerd Visscher and Lon Boonen -->
+<!-- (c) 2002 by Q42, http://web.archive.org/web/20041204200248/http://www.q42.nl/ -->
+<!-- you are allowed to use this tool and the code itself as you like as long as you keep this copyright notice intact -->
+
+
+</body>
+</html>
+
+
+</page>

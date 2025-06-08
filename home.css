@@ -1,0 +1,21 @@
+body {
+  font-family: PT Serif;
+  margin: 3em;
+}
+h1, h2 {
+  text-shadow: 1px 1px 2px #ccc;
+  font-family: Francois One;
+}
+a {
+  display: inline-block;
+  padding: 0.3em 0;  
+}
+.note {
+  font-style: italic;
+}
+
+@media (any-pointer: coarse) {
+  a {
+    padding: 0.8em 0;
+  }
+}

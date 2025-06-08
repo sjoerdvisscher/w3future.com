@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 48 48">
+  <defs>
+    <style>
+      .white { fill: white }
+      .grey { fill: #DAD9D7 }
+      .black { fill: black }
+      .blue { fill: #5374CF }
+      .orange { fill: #FC7851 }
+    </style>
+    <path id="static" d="m6 0v3h-2a1 1 0 0 0 -1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 1 1 1v1a1 1 0 0 1 -1 1h-1a1 1 0 0 0 -1 1v1a1 1 0 0 1 -1 1h-2v-3h2a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1a1 1 0 0 0 1 -1v-1a 1 1 0 0 1 1 -1z" />
+    <g id="anim" class="anim">
+      <use href="#move">
+        <animate attributeName="y" values="0;6;6;0;0" calcMode="spline" dur="5s" keyTimes="0;0.28;0.32;0.6;1" keySplines="0.5 0 0.5 1;0 0 1 1;0.5 0 0.5 1;0 0 1 1" repeatCount="indefinite" />
+      </use>
+      <rect width="2" height="2" x="3" y="10">
+        <animate attributeName="rx" values="0;0;1;0;0" calcMode="spline" dur="5s" keyTimes="0;0.2;0.3;0.4;1" keySplines="0 0 1 1;0.5 0 0.5 1;0.5 0 0.5 1;0 0 1 1" repeatCount="indefinite" />
+      </rect>
+      <rect width="2" height="2" x="4" y="10" />
+      <rect width="2" height="2" />
+      <rect width="2" height="2" x="1">
+        <animate attributeName="rx" values="1;1;0;1;1" calcMode="spline" dur="5s" keyTimes="0;0.2;0.3;0.4;1" keySplines="0 0 1 1;0.5 0 0.5 1;0.5 0 0.5 1;0 0 1 1" repeatCount="indefinite" />
+      </rect>
+      <rect width="3" height="1" y="1">
+        <animate attributeName="height" values="1;7;7;1;1" calcMode="spline" dur="5s" keyTimes="0;0.28;0.32;0.6;1" keySplines="0.5 0 0.5 1;0 0 1 1;0.5 0 0.5 1;0 0 1 1" repeatCount="indefinite" />
+      </rect>
+    </g>
+    <g id="move">
+      <path d="m1 1h2v1a1 1 0 0 0 1 1h1v2h-2v-1a1 1 0 0 0 -1 -1h-1z" />
+      <rect width="2" height="2" y="1">
+        <animate attributeName="rx" values="0;0;1;1;0;0" calcMode="spline" dur="5s" keyTimes="0;0.1;0.2;0.4;0.5;1" keySplines="0 0 1 1;0.5 0 0.5 1;0 0 1 1;0.5 0 0.5 1;0 0 1 1" repeatCount="indefinite" />
+      </rect>
+      <rect width="2" height="2" x="4" y="3">
+        <animate attributeName="rx" values="1;1;0;0;1;1" calcMode="spline" dur="5s" keyTimes="0;0.1;0.2;0.4;0.5;1" keySplines="0 0 1 1;0.5 0 0.5 1;0 0 1 1;0.5 0 0.5 1;0 0 1 1" repeatCount="indefinite" />
+      </rect>
+      <rect width="3" height="1" x="3" y="4">
+        <animate attributeName="height" values="7;1;1;7;7" calcMode="spline" dur="5s" keyTimes="0;0.28;0.32;0.6;1" keySplines="0.5 0 0.5 1;0 0 1 1;0.5 0 0.5 1;0 0 1 1" repeatCount="indefinite" />
+      </rect>
+    </g>
+  </defs>
+  <use href="#static" class="orange" />
+  <use href="#anim" x="6" class="blue" />
+  <use href="#static" x="12" class="grey" />
+  <use href="#anim" x="18" class="black" />
+  <use href="#static" y="12" class="black" />
+  <use href="#anim" y="12" x="6" class="grey" />
+  <use href="#static" y="12" x="12" class="orange" />
+  <use href="#anim" y="12" x="18" class="blue" />
+  <g transform-origin="12 12" style="transform: translate(24px,0) rotate(90deg)">
+    <use href="#static" class="black" />
+    <use href="#anim" x="6" class="grey" />
+    <use href="#static" x="12" class="blue" />
+    <use href="#anim" x="18" class="orange" />
+    <use href="#static" y="12" class="blue" />
+    <use href="#anim" y="12" x="6" class="orange" />
+    <use href="#static" y="12" x="12" class="black" />
+    <use href="#anim" y="12" x="18" class="grey" />
+  </g>
+  <g transform-origin="12 12" style="transform: translate(24px,24px) rotate(180deg)">
+    <use href="#static" class="orange" />
+    <use href="#anim" x="6" class="blue" />
+    <use href="#static" x="12" class="grey" />
+    <use href="#anim" x="18" class="black" />
+    <use href="#static" y="12" class="grey" />
+    <use href="#anim" y="12" x="6" class="black" />
+    <use href="#static" y="12" x="12" class="blue" />
+    <use href="#anim" y="12" x="18" class="orange" />
+  </g>
+  <g transform-origin="12 12" style="transform: translate(0,24px) rotate(270deg)">
+    <use href="#static" class="blue" />
+    <use href="#anim" x="6" class="grey" />
+    <use href="#static" x="12" class="orange" />
+    <use href="#anim" x="18" class="black" />
+    <use href="#static" y="12" class="black" />
+    <use href="#anim" y="12" x="6" class="orange" />
+    <use href="#static" y="12" x="12" class="grey" />
+    <use href="#anim" y="12" x="18" class="blue" />
+  </g>
+</svg>

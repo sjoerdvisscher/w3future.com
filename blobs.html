@@ -1,0 +1,211 @@
+  <html>
+    <head>
+      <title>Colored blobs</title>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+      <script src="/ga.js" type="text/javascript"></script>
+    </head>
+    <body onload="start()">
+      <div class="center"><canvas width="600" height="600" onmousemove="mouseX = event.offsetX / 300 - 1; mouseY = event.offsetY / 300 - 1"></canvas></div>
+    </body>
+  </html>
+
+<style>
+  html { width: 100%; height: 100%; background: black; overflow: hidden; }
+  body { position: absolute; top: 50%; left: 50%; }
+  canvas { 
+    margin: -300px; 
+    /* Hack for Opera, otherwise the canvas is not visible: */
+    border: 1px solid black; 
+  }
+</style>
+
+<script>
+  var N = 20;
+  var IX = 1;
+  var IY = N;
+  var IZ = N*N;
+  var th = 6.5;
+  var scale = 400 / N;
+  var center = (N - 1) / 2;
+  var orbit = center * 0.6;
+  var radius = 0.50 * N;
+  var value = 0.15 * N * N;
+  var cf = 400/th;
+  var minC = th*0.4;
+
+  var context, mouseX = 0, mouseY = 0;
+  var data = [], color = [], pointsX = [], pointsY = [], pointsZ = [];
+
+  function Point()
+  {
+    this.x = 0;
+    this.y = 0;
+    this.p = false;
+  }
+
+  Point.prototype.onX = function(x, y, z, p)
+  {
+    this.p = p;
+    if (!p) return;
+
+    z = z / 2;
+    this.x = x + p + z;
+    this.y = y - z;  
+  }
+  Point.prototype.onY = function(x, y, z, p)
+  {
+    this.p = p;
+    if (!p) return;
+
+    z = z / 2;
+    this.x = x + z;
+    this.y = y + p - z;  
+  }
+  Point.prototype.onZ = function(x, y, z, p)
+  {
+    this.p = p;
+    if (!p) return;
+
+    z = (z + p) / 2;
+    this.x = x + z;
+    this.y = y - z;  
+  }
+
+
+  for (var i = 0; i < N*N*N; i++)
+  {
+    pointsX[i] = new Point();
+    pointsY[i] = new Point();
+    pointsZ[i] = new Point();
+  }
+
+  function r(x1,y1,z1, x2,y2,z2)
+  {
+    x1 -= x2; y1 -= y2; z1 -= z2;
+    if (x1 < -radius || x1 > radius || y1 < -radius || y1 > radius || z1 < -radius || z1 > radius)
+      return 0;
+    return value / (x1*x1 + y1*y1 + z1*z1);
+  }
+
+  function point(f1, f2)
+  {
+    return ((f1 < th && f2 >= th) || (f1 >= th && f2 < th)) && (f1 - th) / (f1 - f2);
+  }
+
+  function draw(o1, o2, o3, o4)
+  {
+    line(o1, o2);
+    line(o1, o3);
+    line(o1, o4);
+    line(o2, o3);
+    line(o2, o4);
+    line(o3, o4);
+  }
+
+  function line(o1, o2)
+  {
+    if (!o1.p || !o2.p)
+      return;
+    context.beginPath();
+    context.moveTo(o1.x, o1.y);
+    context.lineTo(o2.x, o2.y);
+    context.stroke();
+  }
+
+  function start()
+  {
+    var canvas = document.getElementsByTagName("canvas")[0];
+    context = canvas.getContext("2d");
+    context.lineCap = "round";
+    context.translate(0, 200);
+    context.scale(scale, scale);
+    context.fillStyle = "rgba(0, 0, 0, 0.5)";
+
+    doIteration();
+  }
+
+  var d = 0;
+  function doIteration()
+  {
+    var t0 = new Date();
+    var canvas = document.getElementsByTagName("canvas")[0];
+    context = canvas.getContext("2d");
+
+    context.fillRect(-100, -100, 200, 200);
+
+    var d = new Date()/1000;
+    
+    var blur = (Math.sin(d * 3) + 1.1) / 2.1;
+    context.lineWidth = 15 * blur / scale;
+    var alpha = (1.2 - blur) / 1.2;
+    var alphaS = ", " + alpha + ")";
+
+    var p1x = center + orbit * Math.sin(d) * Math.sin(d * 1.4);
+    var p1y = center + orbit * Math.cos(d) * Math.sin(d * 1.5);
+    var p1z = center + orbit * Math.sin(d) * Math.cos(d * 1.6);
+    var p2x = center + orbit * Math.sin(d * 1.6 + 2) * Math.sin(d + 2);
+    var p2y = center + orbit * Math.cos(d * 1.4 + 2) * Math.sin(d + 2);
+    var p2z = center + orbit * Math.sin(d * 1.5 + 2) * Math.cos(d + 2);
+    var p3x = center + orbit * Math.sin(d + 4) * Math.cos(d * 1.5);
+    var p3y = center + orbit * Math.cos(d * 1.6 + 4) * Math.sin(d);
+    var p3z = center + orbit * Math.sin(d + 4) * Math.sin(d * 1.4);
+    var s1 = (Math.sin(d * 4.1) + 2) * 0.4;
+    var s2 = (Math.sin(d * 4.2) + 2) * 0.4;
+    var s3 = 1 // (Math.sin(d * 5.2) + 2) * 0.4;
+    var i = 0;
+    for (var z = 0; z < N; z++)
+      for (var y = 0; y < N; y++)
+        for (var x = 0; x < N; x++)
+        {
+          var r1 = r(x,y,z, p1x,p1y,p1z) * s1;
+          var r2 = r(x,y,z, p2x,p2y,p2z) * s2;
+          var r3 = r(x,y,z, p3x,p3y,p3z) * s3;
+          var total = r1 + r2 + r3;
+          color[i] = (total > minC) && "rgba(" + Math.floor(r1*cf) + "," + Math.floor(r2*cf) + "," + Math.floor(r3*cf) + alphaS;
+          data[i++] = total;
+        }
+
+
+    var i = 0, o;
+    for (var z = 0; z < N - 1; z++)
+    {
+      for (var y = 0; y < N - 1; y++)
+      {
+        for (var x = 0; x < N - 1; x++)
+        {
+          pointsX[i].onX(x, y, z, point(data[i], data[i + IX]))
+          pointsY[i].onY(x, y, z, point(data[i], data[i + IY]))
+          pointsZ[i].onZ(x, y, z, point(data[i], data[i + IZ]))
+          i++;
+        }
+        i++;
+      }
+      i+=N;
+    }
+
+    i = 0;
+    for (var z = 0; z < N - 1; z++)
+    {
+      for (var y = 0; y < N - 1; y++)
+      {
+        for (var x = 0; x < N - 1; x++)
+        {
+          if (color[i]) 
+          {
+            context.strokeStyle = color[i];
+            draw(pointsX[i], pointsY[i], pointsX[i + IY], pointsY[i + IX]);
+            draw(pointsX[i], pointsZ[i], pointsX[i + IZ], pointsZ[i + IX]);
+            draw(pointsZ[i], pointsY[i], pointsZ[i + IY], pointsY[i + IZ]);
+          }
+          i++;
+        }
+        i++;
+      }
+      i+=N;
+    }
+
+    setTimeout(doIteration, 0);
+
+    document.title = "Colored blobs - " + Math.round(10000 / (new Date() - t0))/10 + "fps";
+  }
+</script>

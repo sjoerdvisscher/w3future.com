@@ -1,0 +1,27 @@
+<html>
+	<head>
+		<title>Your new HTML file</title>
+		<style>
+			html, body {
+				margin: 0; padding: 0;
+			}
+			#capture {
+				cursor: url("http://oakandmorrow.com/img/plus.png") 15 15, move;
+				background: black;
+				width: 32px;
+				height: 32px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="capture">
+		</div>
+		<p>Hover over the black box above.</p>
+		<script>
+			var capture = document.getElementById("capture");
+			capture.onmousemove = function (evt) {
+				capture.style.cursor = "url('http://oakandmorrow.com/img/plus.png') " + (evt.x + 20) + " " + (evt.y + 20) + ", move";
+			}
+		</script>
+	</body>
+</html>

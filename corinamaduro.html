@@ -1,0 +1,48 @@
+<meta name="viewport" content="width=device-width, initial-scale=1" data-n-head="true">
+<link href="https://fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet">
+<script>
+function mm(evt) {
+  const e = evt.touches ? evt.touches[0] : evt;
+  const x = e.clientX / window.innerWidth - 0.5;
+  const y = e.clientY / window.innerHeight - 0.5;
+  const r = Math.sqrt(x * x + y * y);
+  document.querySelector('.logo').style.transform = `rotate3D(${-y}, ${x}, 0, ${r * 2}rad)`;
+  evt.preventDefault();
+}
+</script>
+<body onmousemove="mm.call(this, event)" ontouchmove="mm.call(this, event)">
+<div class="logo">
+  <div class="front">C O R I N A</div>
+  <div class="back">M A D U R O</div>
+</div>
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.logo {
+  font-family: 'Source Code Pro', sans-serif;
+  height: 100%;
+  perspective: 20000px;
+  transform-style: preserve-3d;
+}
+.front, .back {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-size: 100px;
+  letter-spacing: -5px;
+  line-height: 180px;
+  width: 300px;
+}
+.front {
+  transform: translate3D(-50%, -50%, 100px)
+}
+.back {
+  transform: translate3D(-50%, -50%, -100px)
+  opacity: 0.7;
+}
+</style>
+</body>

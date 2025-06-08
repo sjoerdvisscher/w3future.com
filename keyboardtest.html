@@ -1,0 +1,33 @@
+<html>
+	<head>
+		<title>Your new HTML file</title>
+	</head>
+	<body>
+		<script>
+      function gcd(a, b) {
+        if (a == b) return a;
+        if (a < b) return gcd(b - a, a);
+        return gcd(a - b, b);
+      }
+			var data = [];
+			var just5 = Math.log(3/2)/Math.log(2);
+			var just3 = Math.log(5/4)/Math.log(2);
+			for (var octave = 5; octave < 1500; octave++)
+			{
+				var fifth = Math.round(just5 * octave);
+				var major = Math.round(just3 * octave);
+        if (gcd(octave, fifth) != 1 && gcd(octave, major) != 1) continue;
+				var fourth = octave - fifth;
+				var whole = fifth - fourth;
+				var isMeantone = 2 * octave + major == 4 * fifth;
+				if (isMeantone)
+					data.push({ 
+						octave: octave,
+						diff: Math.sqrt(Math.pow(just5 - fifth/octave, 2) + Math.pow(just3 - major/octave, 2))
+					});
+			}
+			data.sort(function(a, b) { return (a.diff - b.diff) || (a.octave - b.octave) });
+			console.log(data);
+		</script>
+	</body>
+</html>

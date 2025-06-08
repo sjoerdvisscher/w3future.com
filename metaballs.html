@@ -1,0 +1,133 @@
+<style>
+  html, body { margin: 0; height: 100% }
+  canvas { width: 100%; height: 100% }
+</style>
+<canvas id="metaballs" width="1000" height="700"></canvas>
+<script>
+function render() {
+  const ctx = document.getElementById("metaballs").getContext("2d");
+  ctx.lineWidth = 10
+  ctx.lineJoin = "round"
+  const balls = [0,1,2,3,4,5].map(function(b) {
+    const t = new Date()/3000;
+    return {x: Math.sin(t + b) * 40 + 50, y: Math.cos(t*2 + b*3) * 30 + 35, b: b}
+  });
+  ctx.clearRect(0, 0, 1000, 700);
+  var f = function(x, y) {
+    return balls.map(function(b) {
+      const dist2 = Math.pow(x*2 - b.x, 2) + Math.pow(y*2 - b.y, 2);
+      return (b.b * 50 - 125) / dist2;
+    }).reduce(function(a,b) { return a + b }, 0);
+  }
+  var vals = [];
+  for (var y = 0; y <= 35; y += 1) {
+    vals[y] = [];
+    for (var x = 0; x <= 50; x += 1) {
+      vals[y][x] = f(x, y);
+    }
+  }
+
+  var h = function(x, y, dx0, dy0, dx1, dy1) {
+    var v0 = vals[y + dy0][x + dx0];
+    var v1 = vals[y + dy1][x + dx1];
+    if ((v0 > 1) != (v1 > 1)) {
+      return (v0 - 1) / (v0 - v1);
+    }
+  }
+
+  var ln = function(x, y, dx0, dy0) {
+    ctx.beginPath();
+    ctx.moveTo(20 * (x + dx0), 20 * (y + dy0));
+    for (var i = 4; i < arguments.length; i+=2)
+      ctx.lineTo(20 * (x + arguments[i]), 20 * (y + arguments[i + 1]));
+    ctx.closePath();
+    ctx.stroke();
+    // ctx.fill();
+  }
+
+  var draw = function() {
+    for (var y = 0; y < 35; y += 1) {
+      for (var x = 0; x < 50; x += 1) {
+        var v = vals[y][x] > 1;
+        var l = h(x, y, 0, 0, 0, 1)
+        var t = h(x, y, 0, 0, 1, 0)
+        var b = h(x, y, 0, 1, 1, 1)
+        var r = h(x, y, 1, 0, 1, 1)
+        if (v) {
+          if (l) {
+            if (t) {
+              ln(x, y, 0, 0, 0, l, t, 0)
+              if (r && b)
+                ln(x, y, 1, 1, 1, r, b, 1)
+            } else {
+              if (r)
+                ln(x, y, 0, 0, 1, 0, 1, r, 0, l)
+              if (b)
+                ln(x, y, 0, 0, 0, l, b, 1, 1, 1, 1, 0)
+            }
+          } else {
+            if (t) {
+              if (r)
+                ln(x, y, 0, 0, t, 0, 1, r, 1, 1, 0, 1)
+              if (b)
+                ln(x, y, 0, 0, t, 0, b, 1, 0, 1)
+            } else {
+              if (r && b)
+                ln(x, y, 0, 0, 1, 0, 1, r, b, 1, 0, 1)
+              else {
+                //ln(x, y, 0, 0, 1, 0, 1, 1, 0, 1)
+                ctx.strokeRect(20 * x, 20 * y, 20, 20);
+                // ctx.fillRect(20 * x, 20 * y, 20, 20);
+              }
+            }
+          }
+        } else {
+          if (l) {
+            if (t) {
+              if (r && b) {
+                ln(x, y, 0, l, 0, 1, b, 1)
+                ln(x, y, t, 0, 1, 0, 1, r)
+              } else {
+                ln(x, y, 0, l, 0, 1, 1, 1, 1, 0, t, 0)
+              }
+            } else {
+              if (r)
+                ln(x, y, 0, l, 1, r, 1, 1, 0, 1)
+              if (b)
+                ln(x, y, 0, l, b, 1, 0, 1)
+            }
+          } else {
+            if (t) {
+              if (r)
+                ln(x, y, t, 0, 1, 0, 1, r)
+              if (b)
+                ln(x, y, t, 0, 1, 0, 1, 1, b, 1)
+            } else {
+              if (r && b)
+                ln(x, y, 1, r, 1, 1, b, 1)
+            }
+          }
+        }
+      }
+    }
+  }
+
+  ctx.strokeStyle = "rgba(0, 100, 200, .2)"
+  ctx.fillStyle = "rgba(0, 100, 200, .05)"
+  draw()
+
+  for (var y = 0; y <= 35; y += 1) {
+    for (var x = 0; x <= 50; x += 1) {
+      vals[y][x] = -vals[y][x];
+    }
+  }
+
+  ctx.strokeStyle = "rgba(200, 50, 0, .2)"
+  ctx.fillStyle = "rgba(200, 50, 0, .05)"
+  draw()
+
+  requestAnimationFrame(render);
+}
+
+render();
+</script>

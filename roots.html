@@ -1,0 +1,80 @@
+<!--
+<page url="/roots__">
+  <form method="get">
+    degree: <input name="degree" value="{if($get/degree, $get/degree, 11)}" type="number"/>
+    size: <input name="size" value="{if($get/size,$get/size,800)}" type="number"/>
+    lightness: <input name="lightness" value="{if($get/lightness,$get/lightness,10)}" type="number"/>
+    <input type="submit" />
+  </form>
+  <canvas></canvas>
+  <script>
+    var degree = 1*"<write value="$get/degree"/>" || 11;
+    var size = 0.5*"<write value="$get/size"/>" || 400;
+    var lightness = 1*"<write value="$get/lightness"/>" || 10;
+  </script>
+	<script src="roots.js"></script>
+</page>
+-->
+
+  <canvas></canvas>
+  <script>
+    var degree = 11;
+    var size = 400;
+    var lightness = 10;
+  </script>
+
+<script>
+var canvas = document.getElementsByTagName("canvas")[0];
+canvas.width = size * 2;
+canvas.height = size * 2;
+var ctx = document.getElementsByTagName("canvas")[0].getContext("2d");
+
+var n = 0;
+setTimeout(step, 0);
+function step()
+{
+  var t0 = +new Date;
+  while (new Date - t0 < 1000 && n < size * size)
+  {
+    var imageData = ctx.createImageData(1, 1);
+    var i = 0;
+    var x = n % size;
+    var y = Math.floor(n / size);
+    var c = Math.log(countRoots(x/size*1.6, y/size*1.6) + 1) * lightness;
+    imageData.data[0] = Math.min(255, c);
+    imageData.data[1] = Math.min(255, c*1.3);
+    imageData.data[2] = Math.min(255, c*2);
+    imageData.data[3] = 255;
+    ctx.putImageData(imageData, size + x, size + y);
+    ctx.putImageData(imageData, size + x, size - y);
+    ctx.putImageData(imageData, size - x, size + y);
+    ctx.putImageData(imageData, size - x, size - y);
+    n++;
+  }
+  if (y < size)
+    setTimeout(step, 0);
+}
+
+function countRoots(xr, xi)
+{
+  var xnr = xr; xni = xi;
+  var resr = [1], resi = [0];
+  for (var n = 1; n <= degree; n++)
+  {
+    var ar = [], ai = [];
+    for (var i = 0; i < resi.length; i++)
+    {
+      ar.push(resr[i] + xnr, resr[i] - xnr);
+      ai.push(resi[i] + xni, resi[i] - xni);
+    }
+    var xn1r = xnr*xr - xni*xi;
+    var xn1i = xnr*xi + xni*xr;
+    xnr = xn1r; xni = xn1i; resr = ar; resi = ai;
+  }
+  
+  var dist = 0;
+  for (var i = 0; i < resr.length; i++)
+    dist += Math.pow(resr[i] * resr[i] + resi[i] * resi[i], -2);
+  return dist * Math.pow(xr * xr + xi * xi, degree);
+}  
+</script>

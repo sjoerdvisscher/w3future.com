@@ -1,0 +1,11 @@
+This is your new HCML file.
+
+<page url="/fblink.xml" type="xml">
+	<Response> 
+		<Say>In the <write value="$get/channel" /> channel, 
+			<write value="$get/user" /> suggested this link for facebook: <write value="$get/text" />
+		</Say>
+	</Response>
+</page>
+
+/fblink http://q42.nl

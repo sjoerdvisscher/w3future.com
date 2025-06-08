@@ -1,0 +1,270 @@
+<title>Lumatone mapping calculator</title>
+<script src="/ga.js" type="text/javascript"></script>
+<link type="text/css" rel="stylesheet" href="lumatone.css" />
+<div id="lumatone-status">No Lumatone detected</div>
+<div id="keyboard"></div>
+<form onsubmit="return false" onkeyup="redraw()">
+  <div class="inputs">
+    <code title="number of notes in an octave">o</code><input name="o" value="12" autocomplete="off"/><code></code>
+    <code title="note number">n</code><input name="n" value="0" autocomplete="off"/><code></code>
+    <hr>
+    <code title="MIDI channel (1-16)">midi&nbsp;channel</code><input name="midiChannel" value="0" autocomplete="off"/><code></code>
+    <code title="MIDI note (0-127)">midi&nbsp;note</code><input name="midiNote" value="0" autocomplete="off"/><code></code>
+    <hr>
+    <code title="Key hue (0-360, 0=red, 120=green, 240=blue)">h</code><input name="h" value="0" autocomplete="off"/><code></code>
+    <code title="Key saturation (0-100, 0=grey, 100=fully saturated)">s</code><input name="s" value="0" autocomplete="off"/><code></code>
+    <code title="Key lightness (0-100, 0=black, 50=grey/color, 100=white)">l</code><input name="l" value="0" autocomplete="off"/><code></code> 
+    <hr>
+    <div id="extra-inputs">      
+    </div>
+    <button id="add-input">Add variable</button>
+  </div>
+  <table>
+    <tr>
+      <td>
+        <code title="Key row (-9 to 9)">row</code><input type="hidden" name="row"/><code></code><br>
+        <code title="Key column (-19 to 19)">col</code><input type="hidden" name="col"/><code></code><br>
+      </td>
+      <td>
+        <code title="Key horizontal position (-115 to 117)">x</code><input type="hidden" name="x"/><code></code><br>
+        <code title="Key vertical position (-28 to 27)">y</code><input type="hidden" name="y"/><code></code><br>
+      </td>
+      <td>
+        <code title="Lumatone section number (1-5)">section</code><input type="hidden" name="section"/><code></code><br>
+        <code title="Lumatone key index on section (0-55)">ix</code><input type="hidden" name="ix"/><code></code><br>
+      </td>
+    </tr>
+    <tr><td colspan="3">
+      <p>
+        <select name="presets">
+          <option>Load preset</option>
+        </select>
+      </p>
+      <p id="intro">
+        The <b>Lumatone mapping calculator</b> allows calculating keyboard layouts using formulas, which can be easier than manually assigning
+        values to each of the 280 keys. The colors are calculated using the HSL model (Hue, Saturation, Lightness). Hover over a key above to see 
+        the calculated values for that key.
+        <br><br>
+        Available functions are the methods from the JavaScript <b>Math</b> object, and <b>mod</b>(<i>a</i>, <i>n</i>): modulo
+        that handles negative numbers better, and <b>steps</b>(<i>fraction</i>) to calculate the best approximation to the given interval.
+      </p>
+      <p>
+        <code id="error"></code>
+      </p>
+    </td></tr>
+  </table>
+</form>
+<script type="text/javascript" src="https://unpkg.com/json-url@2.3.1/dist/browser/json-url.js"></script>
+<script type="module">
+  import { playSound } from "/keyboard/note.mjs";
+  import { Key, keys, setNote, setColor, toHexColor, setLumatoneCallback } from "./lumatone.mjs";
+  import { presets } from "./presets.mjs";
+  const jsonUrl = JsonUrl('lzma');
+  
+  setLumatoneCallback(function(lumatone) {
+    document.getElementById("lumatone-status").textContent = "Lumatone detected";
+  })
+  
+  var keyboardEl = document.getElementById("keyboard");
+  for (let key of keys) {
+    var {x,y,row,col,side} = key;
+    var el = document.createElement("div");
+    keyboardEl.appendChild(el);
+    el.className = "key";
+    el.style.left = x*5 - 22 + "px";
+    el.style.top = y*5 + "px";
+    if (!row && !col) el.style.borderColor = "rgba(0,0,0,.3)";
+    el.style.transitionDelay = Math.sqrt(x*x+y*y)/400 + "s";
+    key.el = el;
+    el.onmouseover = function() {
+      fill(key);
+    }
+    el.onmouseout = function() {
+      fill();
+    }
+    el.onmousedown = function() {
+      var freq = 261.63 * Math.pow(2, (key.midiNote - 60) / key.o + key.midiChannel - 1 - (key.midiChannel > 8 ? 16 : 0));
+      playSound(freq);
+    }
+  }
+
+  function initInput(inp) {
+    Object.defineProperty(Key.prototype, inp.name, {
+      enumerable: true,
+      configurable: true,
+      get() {
+        inp.classList.remove("error")
+        try {
+          var res = calc(inp.value, this); 
+        } catch(e) {
+          inp.classList.add("error")
+          errorEl.textContent = ""+e;
+        }
+        return res;
+      }
+    });
+    inp.onblur = function() {
+      if (!this.value) {
+        delete Key.prototype[inp.name];
+        let p = this.parentNode;
+        p.removeChild(this.previousElementSibling);
+        p.removeChild(this.nextElementSibling);
+        p.removeChild(this);
+      }
+    }
+    inp.onkeydown = function(evt) {
+      let i = parseInt(this.value);
+      if (i == this.value) {
+        if (evt.code == "ArrowUp") {
+          this.value = i + 1;
+        } else if (evt.code == "ArrowDown") {
+          this.value = i - 1;
+        }
+      }
+    }
+  }
+
+  let errorEl = document.getElementById("error");
+  for (let inp of document.forms[0]) {
+    if (inp.type == 'text') {
+      initInput(inp);
+    }
+  }
+  document.getElementById("add-input").onclick = function onAddInput() {
+    let name = window.prompt("Enter the name of the new variable:")
+    if (document.forms[0][name]) {
+      alert("That variable already exists.");
+      onAddInput();
+      return;
+    }
+    addInput(name);
+  }
+  
+  var redrawTO = null;
+  var updateLumatoneTO = null;
+  window.redraw = function() {
+    clearTimeout(redrawTO);
+    redrawTO = setTimeout(doRedraw, 200);
+  }
+   
+  function doRedraw() {
+    errorEl.textContent = "";
+    for (let key of keys)
+      key.el.style.background = `hsl(${key.h}, ${key.s}%, ${key.l}%)`;
+
+    clearTimeout(updateLumatoneTO);
+    updateLumatoneTO = setTimeout(updateLumatoneTOH, 2000);  
+    setTimeout(updateHash, 0);
+  }
+  
+  
+  var extraInputs = document.getElementById("extra-inputs");
+  function loadJson(json) {
+    extraInputs.innerHTML = "";
+    for (let name in json) {
+      var inp = document.forms[0][name] || addInput(name);
+      inp.classList.remove("error");
+      inp.value = json[name];
+    }
+    redraw();
+  }
+  function addInput(name) {
+    var inp = document.createElement("input");
+    inp.type = "text";
+    inp.name = name;
+    var label = document.createElement("code");
+    label.innerText = name;
+    var inspector = document.createElement("code");
+    extraInputs.appendChild(label);
+    extraInputs.appendChild(inp);
+    extraInputs.appendChild(inspector);
+    initInput(inp);
+    return inp;
+  }
+  
+  for (let title in presets) {
+    var opt = document.createElement("option");
+    opt.textContent = "Preset: " + title;
+    opt.value = JSON.stringify(presets[title]);
+    document.forms[0].presets.appendChild(opt)
+  }
+  document.forms[0].presets.onchange = loadPreset;
+  function loadPreset() {
+    loadJson(JSON.parse(document.forms[0].presets.value));
+  }
+
+  if (location.hash) {
+    jsonUrl.decompress(location.hash.substr(1)).then(loadJson)
+  } else {
+    document.forms[0].presets.selectedIndex = 1;
+    loadPreset();
+  }
+
+  function updateLumatoneTOH() {
+    for (let key of keys) {
+      setNote(key.board, key.ix, key.midiChannel, key.midiNote);
+      setColor(key.board, key.ix, toHexColor(key.h, key.s, key.l));
+    }
+  }
+  redraw();
+  
+  function updateHash() {
+    var sheet = {};
+    for (let inp of document.forms[0]) 
+      if (inp.type == "text")
+        sheet[inp.name] = inp.value;
+    // console.log(JSON.stringify(sheet));
+    jsonUrl.compress(sheet).then(output => { location.hash = output; })
+  }
+  
+  function fill(key) {
+    for (let inp of document.forms[0]) {
+      if (inp.type != 'select-one' && inp.nextElementSibling)
+        inp.nextElementSibling.textContent = key ? `= ${Math.round(10*key[inp.name])/10}` : '=';
+    }
+  }
+
+</script>
+<script>
+  if (!location.pathname.endsWith('/')) 
+    location = location.pathname + '/';
+  
+  var eucMemo = {};
+  function extEuc(n, d) {
+    if (eucMemo[[n, d]]) return eucMemo[[n, d]];
+    if (n < 0) throw ("invalid argument: " + n)
+    if (d < 0) throw ("invalid argument: " + d)
+    var old_r = n, r = d, old_s = 1, s = 0;
+    
+    while (r >= 1) {
+      var q = Math.floor(old_r / r);
+      [old_r, r] = [r, old_r - q * r];
+      [old_s, s] = [s, old_s - q * s];
+    }
+    
+    return eucMemo[[n, d]] = { gcd: old_r, inv: old_s };
+  }
+  Math.modInv = function(n, d) {
+    return extEuc(n, d).inv;
+  }
+  Math.gcd = function(n, d) {
+    return extEuc(n, d).gcd;
+  }
+  
+  Math.mod = function(n, d) {
+    var m = n % d;
+    return m < 0 ? m + d : m;
+  }
+  Math.steps = function(r) {
+    return Math.round((Math.log(r)/Math.log(2)) * document.forms[0].o.value);
+  }
+
+
+  function calc(func, ctx) {
+    with (Math) {
+      with (ctx) {
+        return eval(func);
+      }    
+    }
+  }
+</script>

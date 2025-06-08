@@ -1,0 +1,110 @@
+<html>
+  <head>
+    <title>Radiohead / House of Cards</title>
+    <script src="radiohead-data.js" />
+    <link type="text/css" rel="stylesheet" href="/radiohead.css" />
+    <script src="/ga.js" type="text/javascript"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  </head>
+  <body>
+    <canvas
+      width="800"
+      height="600"
+      onmousedown="doMouseDown(event)"
+      onmousemove="doMouseMove(event)"
+      onmouseup="doMouseUp(event)"
+    >
+      You need a browser with canvas support
+    </canvas>
+  </body>
+</html>
+
+<style>
+  body {
+    background: #000000;
+    text-align: center;
+  }
+  canvas {
+    width: 800px;
+    height: 600px;
+    background: #000000;
+    cursor: default;
+  }
+</style>
+
+<script>
+  var ctx = document.body.getElementsByTagName("canvas")[0].getContext("2d");
+  var colorF = function(i, p) {
+    return Math.floor(1000 * Math.pow(i / 200 + 0.3, p)) / 10;
+  };
+
+  var colors = [];
+  for (var i = 0; i < 256; i++)
+    colors[i] =
+      "rgb(" +
+      colorF(i, 6) +
+      "%, " +
+      colorF(i, 2) +
+      "%, " +
+      colorF(i, 0.3) +
+      "%)";
+
+  var colors2 = [];
+  for (var i = 0; i < 256; i++)
+    colors2[i] =
+      "rgb(" +
+      colorF(i, 0.3) +
+      "%, " +
+      colorF(i, 2) +
+      "%, " +
+      colorF(i, 4) +
+      "%)";
+
+  var theta = 0;
+  function draw() {
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.fillRect(0, 0, 800, 600);
+    var pts = points[Math.floor(new Date() / 200) % (points.length - 1)] || [];
+    var prevColor = -1;
+    theta = Math.sin(new Date() / 2000);
+    var bar = 270 + 220 * Math.sin(new Date() / 1100);
+    var barTheta = Math.sin(new Date() / 100);
+    var cos = Math.cos(theta);
+    var sin = Math.sin(theta);
+    var cos2 = Math.cos(theta + barTheta);
+    var sin2 = Math.sin(theta + barTheta);
+    for (var i = 0; i < pts.length - 4; i += 4) {
+      var color = pts[i + 3];
+      if (color < 40) continue;
+      var y = pts[i + 1];
+      var x = 200 + cos * (pts[i] - 100) + sin * (pts[i + 2] + 100);
+      var inBar = Math.max(0, 10 - Math.abs(bar - pts[i] - y)) / 10;
+      color = (inBar ? colors2 : colors)[color];
+      if (color != prevColor) {
+        prevColor = color;
+        ctx.fillStyle = color;
+      }
+      ctx.fillRect(x * 2, y * 2, 2, 2);
+    }
+    setTimeout(draw, 0);
+  }
+
+  draw();
+
+  var mouseDown = false;
+  var startX = null;
+  var startTheta = null;
+  function doMouseDown(evt) {
+    mouseDown = true;
+    startX = evt.clientX;
+    startTheta = theta;
+  }
+
+  function doMouseUp(evt) {
+    mouseDown = false;
+  }
+
+  function doMouseMove(evt) {
+    if (mouseDown) theta = startTheta + (evt.clientX - startX) / 50;
+  }
+</script>

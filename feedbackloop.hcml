@@ -1,0 +1,109 @@
+<page url="/feedbackloop" type="html5">
+<html>
+  <body>
+  <canvas id="output" width="512" height="512"></canvas>
+  <video id="video" autoplay="autoplay"></video>
+</body>
+<script>
+var SIZE = 1024;
+function createCanvas()
+{
+  var canvas = document.createElement("canvas");
+  canvas.width = SIZE;
+  canvas.height = SIZE;
+  canvas.getContext("2d").clearRect(0, 0, SIZE, SIZE);
+  return canvas;
+}
+
+function DrawNode()
+{
+  this.canvas = createCanvas();
+  this.ctx = this.canvas.getContext("2d");
+  this.canvasOld = createCanvas();
+  this.ctxOld = this.canvasOld.getContext("2d");
+  this.subNodes = [];
+}
+DrawNode.prototype.draw = function()
+{
+  if (this.drawing)
+    return this.canvasOld;
+
+  this.drawing = true;
+  
+  var nextCanvas = this.canvasOld;
+  var nextCtx = this.ctxOld;
+  this.canvasOld = this.canvas;
+  this.ctxOld = this.ctx;
+  this.canvas = nextCanvas;
+  this.ctx = nextCtx;
+
+  for (var i = 0; i < this.subNodes.length; i++)
+  {
+    this.ctx.save();
+    this.ctx.globalAlpha = 0.95;
+    this.ctx.transform.apply(this.ctx, this.subNodes[i].matrix);
+    this.ctx.drawImage(this.subNodes[i].node.draw(), 0, 0, SIZE, SIZE);
+    this.ctx.restore();
+  }
+  
+  this.drawing = false;
+  this.ctxOld.clearRect(0, 0, SIZE, SIZE);
+
+  return this.canvas;
+}
+DrawNode.prototype.addSubNode = function(node, matrix)
+{
+  return this.subNodes.push({ node: node, matrix: matrix }) - 1;
+}
+DrawNode.prototype.removeSubNode = function(index)
+{
+  this.subNodes.splice(index, 1);
+}
+
+var square = new DrawNode();
+square.draw = function()
+{
+  if (!this.drawn)
+  {
+    this.drawn = true;
+    this.ctx.fillRect(0, 0, SIZE, SIZE);
+  }
+  return this.canvas;
+}
+
+var video = {
+  draw: function()
+  {
+    if (!this.video)
+    {
+      this.video = document.createElement("video");
+      this.video.autoplay = true;
+      var me = this;
+      navigator.webkitGetUserMedia({video: true}, function(stream)
+      {
+        me.video.src = window.webkitURL.createObjectURL(stream);
+      })
+    }
+    return this.video;
+  }
+}
+
+var root = new DrawNode();
+var tree = new DrawNode();
+root.addSubNode(tree, [1.5, 0, 0, 1.5, -350, -250]);
+tree.addSubNode(video, [0.1, 0, 0, 0.1, 512 - 50, 600]);
+tree.addSubNode(tree, [0.8*0.8, 0.6*0.8, -0.6*0.8, 0.8*0.8, 540, -120]);
+tree.addSubNode(tree, [0.6*0.6, -0.8*0.6, 0.8*0.6, 0.6*0.6, -40, 570]);
+
+var canvas = document.getElementById("output");
+var ctx = canvas.getContext("2d");
+function step() 
+{ 
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  ctx.drawImage(root.draw(), -SIZE/4, -SIZE/4, SIZE, SIZE);
+  setTimeout(step, 0);
+}
+setTimeout(step, 0);
+</script>
+</html>
+</page>

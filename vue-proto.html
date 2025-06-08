@@ -1,0 +1,130 @@
+<html>
+	<head>
+		<title>Vue prototype</title>
+		<script src="http://vuejs.org/js/vue.min.js"></script>
+		<style>
+			.name {
+				transition: color 500ms linear;
+				color: black;
+			}
+			.name.animate {
+				color:red;
+			}
+			xmp {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div>
+			<div id="topbar">
+				<!-- <img src="logo.png" /> -->
+				<div id="next-trip" v-component="NextTrip"></div>
+				<div v-component="MainMenu"></div>
+			</div>
+			<div>
+				<div v-repeat="trips" v-component="Trip" className="trip"></div>
+			</div>
+			<input type="text" v-on="change: setUser" />
+		</div>
+		
+		<xmp id="Trip-template">
+			from {{from}} to {{to}}<br/>
+			{{departure}}
+		</xmp>
+		
+		<xmp id="NextTrip-template">
+			from {{nextTrip.from}} to {{nextTrip.to}}
+		</xmp>
+		
+		<xmp id="MainMenu-template">
+			<nav id="main">
+				<ul>
+					<li v-component="MainMenuItem"
+						v-with="primaryText: currentUser.userName, 
+						secondaryText: currentUser.bonusLevel">
+					</li>
+					<li v-component="MainMenuItem"
+						v-with="primaryText: 'My Trips', 
+						secondaryText: tripCount">
+					</li>
+				</ul>
+			</nav>
+		</xmp>
+		
+		<xmp id="MainMenuItem-template">
+			<p class="name" v-class="animate: primaryText == 'Kamil'">{{primaryText}}</p>
+			<p>{{secondaryText}}</p>
+		</xmp>
+		
+		<script>
+			var components = {
+				
+				MainMenu: {
+					inherit: true,
+					computed: {
+						tripCount: function () {
+							var plural = this.trips.length === 1 ? 'flight' : 'flights';
+							return this.trips.length + ' ' + plural;
+						}
+					}
+				},
+				
+				MainMenuItem: {}, 
+				
+				Trip: {},
+				
+				NextTrip: {
+					inherit: true,
+					computed: {
+						nextTrip: function () {
+							return this.trips[0];
+						}
+					}
+				}
+				
+			};
+			
+			for (var nm in components)
+				components[nm].template = document.getElementById(nm + '-template').innerHTML;
+			
+			var vm = new Vue({
+				components: components,
+				el: 'body',
+
+				data: {
+					currentUser: {
+						userName: "Ivar Eden",
+						bonusLevel: "Ivory"
+					},
+					trips: [{
+						id: 1,
+						from: "Amsterdam",
+						to: "New York",
+						departure: "14:00 Friday, 16 Januari"
+					}, {
+						id: 2,
+						from: "Amsterdam",
+						to: "Hong Kong",
+						departure: "10:00 Monday, 12 Februari"
+					}]
+				},
+				
+				methods: {
+					setUser: function(e) {
+						this.currentUser.userName = e.target.value;
+					},
+					addTrip: function(id, from, to, departure) {
+						this.trips.push({
+							id: id,
+							from: from,
+							to: to,
+							departure: departure
+						});
+					}
+				}
+			});
+
+		</script>
+	</body>		
+</html>
