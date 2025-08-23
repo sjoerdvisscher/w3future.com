@@ -1,0 +1,103 @@
+<title>Joeri 50!!!</title>
+<link rel="icon" href="favicon.png">
+<body style="background-image: url('cloud.gif')">
+
+<center>
+
+  <marquee><h1 style="color: red"><big>Joeri 50!!!   Joeri 50!!!   Joeri 50!!!   Joeri 50!!!</big></h1></marquee>
+
+  <div style="background: url(flags.gif); background-position: 50% 50%; height: 200px"></div>
+
+  <script type='text/javascript' src='//www.midijs.net/lib/midi.js'></script>
+  <div>
+    <img src="koekjes.jpg" width="300">
+    <h2 style="display: inline-block">
+      <a href="#" onClick="MIDIjs.play('Ace_of_Base_-_The_Sign.mid');">Klik hier voor MIDI!!!<br><img src="midi.gif"></a>
+      <br><a href="#" onClick="MIDIjs.stop();">Stop MIDI</a>
+    </h2>
+    <img src="koekjes.jpg" width="300">
+  </div>
+
+  <p><img src="underconstruction.gif"></p>
+
+  <img src="joeri1.jpg" class="photo">
+  <img src="joeri2.jpg" class="photo">
+  <img src="joeri3.jpg" class="photo">
+  <img src="joeri4.jpg" class="photo">
+  <img src="joeri5.jpg" class="photo">
+  <img src="joeri6.jpg" class="photo">
+  <img src="joeri7.jpg" class="photo">
+  <img src="joeri8.jpg" class="photo">
+  <img src="joeri9.jpg" class="photo">
+  <img src="joeri10.jpg" class="photo">
+
+  <p style="background: white; border: 4px outset; padding: 10px">
+    Gemaakt voor Netscape <img src="netscape.gif" width="100"> met tenminste 1024x786 resolutie
+  </p>
+
+  <img src="joeri11.jpg" class="photo">
+  <img src="joeri12.jpg" class="photo">
+  <img src="joeri13.jpg" class="photo">
+  <img src="joeri14.jpg" class="photo">
+  <img src="joeri15.jpg" class="photo">
+  <img src="joeri16.jpg" class="photo">
+  <img src="joeri17.jpg" class="photo">
+  <img src="joeri18.jpg" class="photo">
+  <img src="joeri19.jpg" class="photo">
+  <img src="joeri20.jpg" class="photo">
+  <p><img src="sticker.webp" class="photo"></p>
+
+  <p><img src="underconstruction.gif"></p>
+  <p><img src="button1.gif"><img src="button2.gif"><img src="button3.gif"><img src="button4.gif"></p>
+
+  <p>(c) Copyright 1997 Vrienden Heeten</p>
+
+</center>
+
+<style>
+  .star { position: absolute; cursor: default; pointer-events: none }
+  img { margin: 5px; vertical-align: middle;}
+  img.photo { max-width: 80vw; max-height: 80vh; margin: 50px }
+</style>
+<script>
+  var mouse = {x:0, y:0};
+  var mouses = [];
+
+  for (let i = 0; i < 10; i++) {
+    createStar();
+  }
+
+  function createStar() {
+    const star = document.createElement("div");
+    star.className = "star";
+    star.innerText = "*";
+    document.body.appendChild(star);
+  }
+
+  window.requestAnimationFrame(moveStars);
+  function moveStars(evt) {
+    mouses.unshift({ x: mouse.x, y: mouse.y });
+    var maxEqual = 0;
+    mouses.forEach(function (mouse) {
+      var equal = 0;
+      mouses.forEach(function (m) { if (m.x == mouse.x && m.y == mouse.y) equal++; });
+      if (equal > maxEqual) maxEqual = equal;
+    })
+    var dt = 20;
+    var t = Date.now() / 100;
+    mouses.length = 200;
+    var spin = maxEqual / 10;
+    for (let i = 0; i < 10; i++) {
+      const stars = document.querySelectorAll(".star");
+      var myMouse = { x: mouse.x, y: mouse.y };
+      if (!mouses[i * dt]) continue;
+      stars[i].style.left = mouses[i * dt].x + Math.sin(t + i*0.63) * spin + "px";
+      stars[i].style.top = mouses[i * dt].y + Math.cos(t + i*0.63) * spin + "px";
+    }
+    window.requestAnimationFrame(moveStars);
+  }
+
+  document.body.onmousemove = function (event) {
+    mouse = {x: event.pageX, y: event.pageY};
+  };
+</script>
