@@ -4,7 +4,17 @@ var audioCtx = null;
 var soundBuffer = null;
 var compressor = null;
 
+function resumeAudio() {
+    if (audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
+        audioCtx.resume().catch(function (error) {
+            console.error('Unable to start audio:', error);
+        });
+    }
+}
+
 export function playSound(freq, vol, dt = 0) {
+    // Unlock audio on interaction even if the sample is still loading.
+    resumeAudio();
 	  vol = vol === undefined ? 0.5 : vol;
     if(soundBuffer) {
         // console.log("playing", freq)
@@ -66,7 +76,7 @@ Note.prototype.stopNote = function() {
 };
   
 if('webkitAudioContext' in window || 'AudioContext' in window) {
-  audioCtx = new (window.webkitAudioContext || window.AudioContext)();
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   
   compressor = audioCtx.createDynamicsCompressor();
   compressor.threshold.value = -40;
@@ -76,34 +86,17 @@ if('webkitAudioContext' in window || 'AudioContext' in window) {
   compressor.release.value = 0.25;
   compressor.connect(audioCtx.destination)
 
-	var fromTouchEnd = false;
-	document.body.ontouchend = function() {
-		if (!fromTouchEnd) {
-			fromTouchEnd = true;
-			var request = new XMLHttpRequest();
-      request.open('GET', 'https://cdn.glitch.com/d4395f6d-f5a9-4c72-baaf-d540b05e361d%2Frhodes.mp3?1515162947197', true);
-      request.responseType = 'arraybuffer';
-	    request.addEventListener('load', function () {
-        audioCtx.decodeAudioData(request.response, function (buffer) { 
-          soundBuffer = buffer
-          // playSound(500, 1)
-          console.log("soundBuffer from touch end")
-        })
-      }, false);
-      request.send();
-		}
-	}
+  document.body.addEventListener('touchend', resumeAudio);
 
-  function bufferSound() {
-      audioCtx.createBuffer(request.response, false);
-  }
-
-  var request = new XMLHttpRequest();
-  request.open('GET', 'https://cdn.glitch.com/d4395f6d-f5a9-4c72-baaf-d540b05e361d%2Frhodes.mp3?1515162947197', true);
-  request.responseType = 'arraybuffer';
-	request.addEventListener('load', function () {
-		audioCtx.decodeAudioData(request.response, function (buffer) { soundBuffer = buffer })
-	}, false);
-  request.send();
-
+  // Keep the instrument sample on this site rather than depending on Glitch.
+  fetch('/Media/rhodes.mp3')
+    .then(function (response) {
+      if (!response.ok) throw new Error('Piano sample request failed: ' + response.status);
+      return response.arrayBuffer();
+    })
+    .then(function (data) { return audioCtx.decodeAudioData(data); })
+    .then(function (buffer) { soundBuffer = buffer; })
+    .catch(function (error) {
+      console.error('Unable to load the piano sample:', error);
+    });
 }
